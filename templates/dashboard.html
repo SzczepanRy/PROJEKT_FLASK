@@ -1,0 +1,374 @@
+{% extends "bootstrap/base.html" %}
+{% block html_attribs %}
+    data-bs-theme="dark"
+{% endblock %}
+{% block scripts %}
+    {{ super() }}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+{% endblock %}
+{% block title %}{{ title }}{% endblock %}
+{% block navbar %}
+    {% if current_user.is_authenticated %}
+        {% include "includes/navbar-login.html" %}
+    {% endif %}
+{% endblock %}
+{% block content %}
+    <div class="px-5">
+        <div class="row">
+            {% with messages = get_flashed_messages(with_categories=True) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+        {% if current_user.userRole == 'admin' %}
+            {% include "includes/admin-dash.html" %}
+        {% else %}
+            {% include "includes/user-dash.html" %}
+        {% endif %}
+
+    </div>
+
+    <!-- Modal Add User -->
+    <div class="modal fade" id="addUser" tabindex="-1" aria-labelledby="addUserLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <p class="modal-title" id="addUserModal">
+                        <i class="bi bi-person-add pe-2 fs-5"></i>Dodaj nowego uzytkownika
+                    </p>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ url_for('addUser') }}" method="post">
+                    {{ addUser.hidden_tag() }}
+                    <div class="modal-body">
+                        <div class="d-grid py-3">
+                            <div class="input-group flex-nowrap py-1">
+                                <span class="input-group-text text-secondary"><i class="bi bi-person text-secondary"></i></span>
+                                {{ addUser.firstName(class="form-control") }}
+                            </div>
+                            <div class="input-group flex-nowrap py-1">
+                                <span class="input-group-text text-secondary"><i class="bi bi-person text-secondary"></i></span>
+                                {{ addUser.lastName(class="form-control") }}
+                            </div>
+                            <div class="input-group flex-nowrap py-1">
+                                <span class="input-group-text text-secondary">@</span>
+                                {{ addUser.userMail(class="form-control") }}
+                            </div>
+                            <div class="input-group flex-nowrap py-1">
+                                <span class="input-group-text text-secondary"><i class="bi bi-key text-secondary"></i></span>
+                                {{ addUser.userPass(class="form-control") }}
+                            </div>
+                            <div class="input-group flex-nowrap py-1">
+                                <span class="input-group-text text-secondary"><i class="bi bi-person-gear text-secondary"></i></span>
+                                {{ addUser.userRole(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Anuluj</button>
+                        {{ addUser.submit(class="btn btn-success btn-sm", value="Dodaj") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Delete User -->
+    {% for user in users %}
+    <div class="modal fade" id="deleteUser{{ user.id }}" tabindex="-1" aria-labelledby="deleteUserLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <p class="modal-title" id="deleteUserModal">
+                            <i class="bi bi-person-dash pe-2 fs-5"></i>Usuń użytkownika
+                        </p>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Czy na pewno chcesz usunąć użytkownika {{ user.firstName }} {{ user.lastName }}?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Anuluj</button>
+                        <a href="{{ url_for('deleteUser', id=user.id) }}" class="btn btn-danger btn-sm" role="button">Usuń</a>
+                    </div>
+                </div>
+            </div>
+    </div>
+    {% endfor %}
+
+    <!-- Modal Edit User -->
+    {% for user in users %}
+    <div class="modal fade" id="editUser{{ user.id }}" tabindex="-1" aria-labelledby="editUserLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <p class="modal-title" id="editUserModal">
+                        <i class="bi bi-person-gear pe-2 fs-5"></i>Edycja użytkownika
+                    </p>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ url_for('editUser', id=user.id) }}" method="post">
+                    {{ editUser.hidden_tag() }}
+                    <div class="modal-body">
+                        <div class="d-grid py-3">
+                            <div class="input-group flex-nowrap py-1">
+                                <span class="input-group-text text-secondary"><i class="bi bi-person text-secondary"></i></span>
+                                {{ editUser.firstName(class="form-control", value=user.firstName) }}
+                            </div>
+                            <div class="input-group flex-nowrap py-1">
+                                <span class="input-group-text text-secondary"><i class="bi bi-person text-secondary"></i></span>
+                                {{ editUser.lastName(class="form-control", value=user.lastName) }}
+                            </div>
+                            <div class="input-group flex-nowrap py-1">
+                                <span class="input-group-text text-secondary">@</span>
+                                {{ editUser.userMail(class="form-control", value=user.userMail) }}
+                            </div>
+                            <div class="input-group flex-nowrap py-1">
+                                <span class="input-group-text text-secondary"><i class="bi bi-person-gear text-secondary"></i></span>
+                                {{ editUser.userRole(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Anuluj</button>
+                        {{ editUser.submit(class="btn btn-success btn-sm", value="Zapisz") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Modal Edit User Password -->
+    {% for user in users %}
+    <div class="modal fade" id="editUserPass{{ user.id }}" tabindex="-1" aria-labelledby="editUserPassLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <p class="modal-title" id="editUserPassModal">
+                        <i class="bi bi-person-gear pe-2 fs-5"></i>Edycja hasła użytkownika
+                    </p>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ url_for('editUserPass', id=user.id) }}" method="post">
+                    {{ editUserPass.hidden_tag() }}
+                    <div class="modal-body">
+                        <div class="d-grid py-3">
+                            <div class="input-group flex-nowrap py-1">
+                                <span class="input-group-text text-secondary"><i class="bi bi-key text-secondary"></i></span>
+                                {{ editUserPass.userPass(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Anuluj</button>
+                        {{ editUserPass.submit(class="btn btn-success btn-sm", value="Zapisz") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+
+
+
+
+
+    <!-- Modal Create File -->
+    <div class="modal fade" id="createFile" tabindex="-1" aria-labelledby="createFileLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <p class="modal-title" id="createFileModal">
+                        <i class="bi bi bi-file-earmark-plus pe-2 fs-5"></i>Utwórz nowy plik
+                    </p>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ url_for('createFile') }}" method="post">
+                    {{ createFile.hidden_tag() }}
+                    <div class="modal-body py-3">
+                    <div class="input-group flex-nowrap py-1">
+                        <span class="input-group-text text-secondary"><i class="bi bi-file-earmark text-secondary rounded-start-2"></i></span>
+                        {{ createFile.fileName(class="form-control") }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Anuluj</button>
+                    {{ createFile.submit(class="btn btn-success btn-sm", value="Utwórz") }}
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Modal Create Folder -->
+    <div class="modal fade" id="createFolder" tabindex="-1" aria-labelledby="createFolderLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <p class="modal-title" id="createFolderModal">
+                        <i class="bi bi-folder-plus pe-2 fs-5"></i>Utwórz nowy folder
+                    </p>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ url_for('createFolder') }}" method="post">
+                    {{ nameForm.hidden_tag() }}
+                    <div class="modal-body py-3">
+                        <div class="input-group flex-nowrap py-1">
+                            <span class="input-group-text text-secondary"><i class="bi bi-folder text-secondary rounded-start-2"></i></span>
+                            {{ nameForm.name(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Anuluj</button>
+                        {{ nameForm.submit(class="btn btn-success btn-sm", value="Utwórz") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal Upload File -->
+    <div class="modal fade" id="uploadFile" tabindex="-1" aria-labelledby="uploadFileLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <p class="modal-title" id="uploadFileModal">
+                        <i class="bi bi-cloud-arrow-up pe-2 fs-5"></i>Prześlij plik
+                    </p>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ url_for('uploadFile') }}" method="post" enctype="multipart/form-data">
+                    {{ uploadFile.hidden_tag() }}
+                    <div class="modal-body py-3">
+                        <div class="input-group flex-nowrap py-1">
+                            {{ uploadFile.fileName(class="form-control rounded-2") }}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Anuluj</button>
+                        {{ uploadFile.submit(class="btn btn-success btn-sm") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: renameFile -->
+    {% for file in files %}
+    <div class="modal fade" id="renameFile{{ file.id }}" tabindex="-1" aria-labelledby="renameFileLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <p class="modal-title" id="renameFileModal">
+                        <i class="bi bi-input-cursor-text pe-2 fs-5"></i>Zmień nazwę pliku
+                    </p>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ url_for('renameFile', fileID=file.id) }}" method="post">
+                    {{ nameForm.hidden_tag() }}
+                    <div class="modal-body py-3">
+                        <div class="input-group flex-nowrap py-1">
+                            <span class="input-group-text text-secondary"><i class="bi bi-file-earmark text-secondary rounded-start-2"></i></span>
+                            {{ nameForm.name(class="form-control", value=".".join(file.fileName.split(".")[:-1]), placeholder="Nowa nazwa pliku") }}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Anuluj</button>
+                        {{ nameForm.submit(class="btn btn-success btn-sm", value="Zmień") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Modal: deleteFile -->
+    {% for file in files %}
+    <div class="modal fade" id="deleteFile{{ file.id }}" tabindex="-1" aria-labelledby="deleteFileLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <p class="modal-title" id="deleteFileModal">
+                        <i class="bi bi-file-x pe-2 fs-5"></i>Usuń plik
+                    </p>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Czy na pewno chcesz usunąć plik <strong>{{ file.fileName }}</strong>?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                    <a href="{{ url_for('deleteFile', fileID=file.id) }}" class="btn btn-danger">Usuń</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Modal: renameFolder -->
+    {% for folder in folders %}
+    <div class="modal fade" id="renameFolder{{ folder.id }}" tabindex="-1" aria-labelledby="renameFolderLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <p class="modal-title" id="renameFolderModal">
+                        <i class="bi bi-input-cursor-text pe-2 fs-5"></i>Zmień nazwę folderu
+                    </p>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ url_for('renameFolder', folderID=folder.id) }}" method="post">
+                    {{ nameForm.hidden_tag() }}
+                    <div class="modal-body py-3">
+                        <div class="input-group flex-nowrap py-1">
+                            <span class="input-group-text text-secondary"><i class="bi bi-folder text-secondary rounded-start-2"></i></span>
+                            {{ nameForm.name(class="form-control", value=folder.folderName, placeholder="Nowa nazwa folderu") }}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Anuluj</button>
+                        {{ nameForm.submit(class="btn btn-success btn-sm", value="Zmień") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+
+    <!-- Modal: deleteFolder -->
+    {% for folder in folders %}
+    <div class="modal fade" id="deleteFolder{{ folder.id }}" tabindex="-1" aria-labelledby="deleteFolderLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <p class="modal-title" id="deleteFolderModal">
+                        <i class="bi bi-folder-x pe-2 fs-5"></i>Usuń folder
+                    </p>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Czy na pewno chcesz usunąć folder <strong>{{ folder.folderName }}</strong>?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                    <a href="{{ url_for('deleteFolder', folderID=folder.id) }}" class="btn btn-danger">Usuń</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+
+
+{% endblock %}

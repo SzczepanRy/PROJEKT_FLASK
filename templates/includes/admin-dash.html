@@ -1,0 +1,40 @@
+<table class="table table-sm">
+    <thead>
+        <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Imię</th>
+            <th scope="col">Nazwisko</th>
+            <th scope="col">Adres e-mail</th>
+            <th scope="col">Uprawnienia</th>
+            <th scope="col">Edycja</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+            <tr>
+                <th scope="row">{{ user.id }}</th>
+                <td>{{ user.firstName }}</td>
+                <td>{{ user.lastName }}</td>
+                <td>{{ user.userMail }}</td>
+                <td>
+                    {% if user.userRole == 'admin' %}
+                        <span class="badge bg-danger">Administrator</span>
+                    {% elif user.userRole == 'moderator' %}
+                        <span class="badge bg-warning">Moderator</span>
+                    {% elif user.userRole == 'staff' %}
+                        <span class="badge bg-primary">Staff</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Użytkownik</span>
+                    {% endif %}
+                </td>
+                <td class="text-end">
+                    <a href="#" class="btn btn-outline-secondary btn-sm" role="button" data-bs-toggle="modal" data-bs-target="#editUserPass{{ user.id }}"><i class="bi bi-key"></i></a>
+                    <a href="#" class="btn btn-outline-info btn-sm" role="button" data-bs-toggle="modal" data-bs-target="#editUser{{ user.id }}"><i class="bi bi-pencil-square"></i></a>
+                    <a href="#" class="btn btn-outline-danger btn-sm" role="button" data-bs-toggle="modal" data-bs-target="#deleteUser{{ user.id }}"><i class="bi bi-trash" ></i></a>
+                </td>
+            </tr>
+        {% endfor %}
+</table>
+<div class="row float-end">
+    <a href="#" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#addUser" role="button"><i class="bi bi-person-plus"></i></a>
+</div>

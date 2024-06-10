@@ -1,0 +1,74 @@
+<div class="row">
+    <div class="col-lg-6">
+        <form method="post" action="#">
+            <div class="input-group mb-3">
+                {{ search.hidden_tag() }}
+                {{ search.search(class="form-control rounded-start-2") }}
+                {{ search.submit(class="btn btn-outline-secondary border-secondary-subtle") }}
+            </div>
+        </form>
+    </div>
+    <div class="col-lg-6">
+        <div class="btn-toolbar" role="toolbar">
+            <div class="btn-group me-2" role="group">
+                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#createFile">
+                    <i class="bi bi-file-earmark-plus"></i>
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#createFolder">
+                    <i class="bi bi-folder-plus"></i>
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#uploadFile">
+                    <i class="bi bi-cloud-arrow-up"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <a href="{{ url_for('homeFolder') }}" class="btn btn-outline-secondary btn-sm" style="width: 100px">
+        <i class="bi bi-arrow-left"></i> HOME</a>
+
+    {% for folder in foldersBar %}
+        <a href="{{ url_for('enterFolder', folderID=folder.id) }}" class="btn btn-outline-secondary btn-sm" style="width: 100px">
+            <i class="bi bi-folder"></i> {{ folder.folderName }}</a>
+    {% endfor %}
+    <table class="table table-sm align-middle">
+        <thead>
+            <tr>
+                <th>Nazwa</th>
+                <th>Data modyfikacji</th>
+                <th>Rozmiar</th>
+                <th class="text-end">Edycja</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for folder in folders %}
+            <tr>
+                <td><i class="{{ folder.icon }} me-2"></i>
+                    <a href="{{ url_for('enterFolder', folderID=folder.id) }}">{{ folder.folderName }}</a>
+                </td>
+                <td>{{ folder.time }}</td>
+                <td>MB</td>
+                <td class="text-end">
+                    <a href="#" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#renameFolder{{ folder.id }}"><i class="bi bi-pencil-square"></i></a>
+                    <a href="#" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteFolder{{ folder.id }}"><i class="bi bi-trash"></i></a>
+                </td>
+            </tr>
+            {% endfor %}
+
+            {% for file in files %}
+                <tr>
+                    <td><i class="{{ file.icon }} me-2"></i> {{ file.fileName }}</td>
+                    <td>{{ file.time }}</td>
+                    <td>{{ file.size }} MB</td>
+                    <td class="text-end">
+                        <a href="#" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#renameFile{{ file.id }}"><i class="bi bi-pencil-square"></i></a>
+                        <a href="#" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteFile{{ file.id }}"><i class="bi bi-trash"></i></a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
